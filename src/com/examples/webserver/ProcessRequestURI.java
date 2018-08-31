@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Base64;
 
 public enum ProcessRequestURI {
 
@@ -15,9 +17,7 @@ public enum ProcessRequestURI {
 		@Override
 		public void processRequest(Socket socket) {
 			try (PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
-				writer.println("HTTP/1.1 200 OK");
-				writer.println("Content-Type: text/html");
-				writer.println("");
+				createResponsHeader(writer, "200 OK", "text/html");
 				writer.println("<h1> Hello world </h1>");
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -34,9 +34,7 @@ public enum ProcessRequestURI {
 					PrintWriter writer = //
 							new PrintWriter(socket.getOutputStream(), true);//
 			) {
-				writer.println("HTTP/1.1 200 OK");
-				writer.println("Content-Type: text/html");
-				writer.println("");
+				createResponsHeader(writer, "200 OK", "text/html");
 				copy(input, socket.getOutputStream());
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -53,9 +51,7 @@ public enum ProcessRequestURI {
 					PrintWriter writer = //
 							new PrintWriter(socket.getOutputStream(), true);//
 			) {
-				writer.println("HTTP/1.1 200 OK");
-				writer.println("Content-Type: image/gif");
-				writer.println("");
+				createResponsHeader(writer, "200 OK", "image/gif");
 				copy(stream, socket.getOutputStream());
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -63,14 +59,53 @@ public enum ProcessRequestURI {
 		}
 	},
 
+	IMAGE_JPG("/imagejpg") {
+
+		@Override
+		public void processRequest(Socket socket) {
+			try (PrintWriter writer = //
+					new PrintWriter(socket.getOutputStream(), true)//
+			) {
+				byte[] imgBytes = Files.readAllBytes(new File("input/test1.jpg").toPath());
+				createResponsHeader(writer, "200 OK", "text/html");
+				StringBuilder builder = new StringBuilder();
+				builder.append("data:image/jpg;base64,");
+				builder.append(Base64.getEncoder().encodeToString(imgBytes));
+				writer.println("<img src=\"" + builder.toString() + "\" alt=\"This is a local  jpg image\"></img>");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	},
+
+	IMAGE_GIF("/imagegif") {
+
+		@Override
+		public void processRequest(Socket socket) {
+			try (PrintWriter writer = //
+					new PrintWriter(socket.getOutputStream(), true)//
+			) {
+				byte[] imgBytes = Files.readAllBytes(new File("input/test.gif").toPath());
+				createResponsHeader(writer, "200 OK", "text/html");
+				StringBuilder builder = new StringBuilder();
+				builder.append("data:image/gif;base64,");
+				builder.append(Base64.getEncoder().encodeToString(imgBytes));
+				writer.println("<img src=\"" + builder.toString() + "\" alt=\"This is a local  gif image\"></img>");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+	},
+
 	ERROR("") {
 
 		@Override
 		public void processRequest(Socket socket) {
 			try (PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
-				writer.println("HTTP/1.1 400 Bad Request");
-				writer.println("Content-Type: text/html");
-				writer.println("");
+				createResponsHeader(writer, "404 Not Found", "text/html");
 				writer.println("<head><title>404 Not Found</title></head>");
 				writer.println("<h1>Not found</h1>");
 				writer.println("<p>The requested URL cannot be parsed by the server!</p>");
@@ -95,6 +130,12 @@ public enum ProcessRequestURI {
 				filter(s -> s.getPath().equals(url)).//
 				findFirst().//
 				orElse(ProcessRequestURI.ERROR);
+	}
+
+	private static void createResponsHeader(PrintWriter writer, String status, String contentType) {
+		writer.println("HTTP/1.1 " + status);
+		writer.println("Content-Type: " + contentType);
+		writer.println("");
 	}
 
 	private static void copy(final FileInputStream in, final OutputStream out) throws IOException {

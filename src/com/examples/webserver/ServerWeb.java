@@ -16,7 +16,7 @@ public class ServerWeb {
 			while (true) {
 				Socket accept = server.accept();
 				if (accept != null) {
-					System.out.println("Client Connected: " + accept.toString());
+					System.out.println("Client Connected: " + accept.getRemoteSocketAddress());
 					new MultiThreadClient(accept, colletingRequestInfo(accept)).run();
 				}
 			}
