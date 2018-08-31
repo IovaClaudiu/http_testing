@@ -17,7 +17,7 @@ public class ServerWeb {
 				Socket accept = server.accept();
 				if (accept != null) {
 					System.out.println("Client Connected: " + accept.toString());
-					new MultiThreadClient(accept, colletingHeaderInfo(accept)).run();
+					new MultiThreadClient(accept, colletingRequestInfo(accept)).run();
 				}
 			}
 		} catch (IOException e) {
@@ -25,7 +25,7 @@ public class ServerWeb {
 		}
 	}
 
-	private static List<String> colletingHeaderInfo(Socket socket) {
+	private static List<String> colletingRequestInfo(Socket socket) {
 		List<String> header = new ArrayList<>();
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
