@@ -68,7 +68,7 @@ public enum ProcessRequestURI {
 		@Override
 		public void processRequest(Socket socket) {
 			try (PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
-				writer.println("HTTP/1.1 404 Not Found");
+				writer.println("HTTP/1.1 400 Bad Request");
 				writer.println("Content-Type: text/html");
 				writer.println("");
 				writer.println("<head><title>404 Not Found</title></head>");
