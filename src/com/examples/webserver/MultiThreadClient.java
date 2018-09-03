@@ -19,6 +19,7 @@ public class MultiThreadClient extends Thread {
 	public void run() {
 		String[] split = headerFields.get(0).split(" ");
 		System.out.println("\t Executing method type: " + split[0]);
+		System.out.println("\t For the URL: " + split[1]);
 		System.out.println("\t Using protocol: " + split[2]);
 		ProcessRequestURI.getRespondFromURL(split[1]).processRequest(socket);
 	}

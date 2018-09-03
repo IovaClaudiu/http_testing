@@ -25,6 +25,21 @@ public enum ProcessRequestURI {
 		}
 	},
 
+	HELP("/help") {
+
+		@Override
+		public void processRequest(Socket socket) {
+			try (PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
+				createResponsHeader(writer, "200 OK", "text/html");
+				writer.println("<h2>The available paths are:</h2>");
+				Arrays.stream(values()).forEach(s -> writer.println("<p>" + s.getPath() + "</p>"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	},
+
 	HTML_FILE("/file") {
 
 		@Override
@@ -76,7 +91,6 @@ public enum ProcessRequestURI {
 				e.printStackTrace();
 			}
 		}
-
 	},
 
 	IMAGE_GIF("/imagegif") {
@@ -95,9 +109,37 @@ public enum ProcessRequestURI {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
 		}
+	},
 
+	IMAGE_STREAMING("/imageStream") {
+
+		@Override
+		public void processRequest(Socket socket) {
+			try (PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
+				createResponsHeader(writer, "200 OK", "text/html");
+				writer.println("<img src=\"/poza\" alt=\"Streaming image\"> </img>");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	},
+
+	POZA("/poza") {
+
+		@Override
+		public void processRequest(Socket socket) {
+			try (PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
+				writer.println("HTTP/1.1 200 OK");
+				writer.println("Content-Type: image/jpg");
+				writer.println("Content-length: " + new File("input/test1.jpg").length());
+				writer.println("");
+				copy(new FileInputStream(new File("input/test1.jpg")), socket.getOutputStream());
+				// Files.copy(new File("input/test1.jpg").toPath(), socket.getOutputStream());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	},
 
 	ERROR("") {
@@ -148,5 +190,4 @@ public enum ProcessRequestURI {
 	}
 
 	public abstract void processRequest(Socket socket);
-
 }
